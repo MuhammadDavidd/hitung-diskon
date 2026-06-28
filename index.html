@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HITUNG HARGA PAKAI VOUCHER — BY TOTOROSTORE DAPPPP</title>
+    <title>Kalkulator Diskon · Belanja Hemat</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
     <style>
         /* ─── RESET & GLOBAL ─── */
@@ -312,6 +312,7 @@
             display: inline-flex;
             align-items: center;
             gap: 0.6rem;
+            flex-wrap: wrap;
             font-weight: 600;
             font-size: 0.95rem;
             color: #1a1a2e;
@@ -334,6 +335,12 @@
             font-size: 0.7rem;
             font-weight: 700;
             letter-spacing: 0.3px;
+        }
+        .hasil .aturan-terpakai .tag.lama {
+            background: #06d6a0;
+        }
+        .hasil .aturan-terpakai .tag.baru {
+            background: #4361ee;
         }
 
         /* ─── ATURAN DISKON ─── */
@@ -406,6 +413,25 @@
             padding: 0.2rem 0.8rem;
             border-radius: 20px;
             display: inline-block;
+        }
+        .aturan-card .tag-label {
+            display: inline-block;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0.15rem 0.7rem;
+            border-radius: 30px;
+            margin-top: 0.4rem;
+            letter-spacing: 0.3px;
+            background: #e9edf4;
+            color: #4a5b6d;
+        }
+        .aturan-card .tag-label.lama {
+            background: #06d6a0;
+            color: #fff;
+        }
+        .aturan-card .tag-label.baru {
+            background: #4361ee;
+            color: #fff;
         }
         .aturan-card .check {
             position: absolute;
@@ -667,43 +693,55 @@
 
         <!-- FOOTER -->
         <div class="footer">
-            Dibuat oleh <strong>DAPPPP</strong> &mdash; order suntik langsung hubungi telegram @dapsigmaa
+            Dibuat oleh <strong>DAPPPP</strong> — order suntik langsung hubungi telegram @dapsigmaa
         </div>
 
     </div>
 
     <script>
         // ──────────────────────────────────────────────
-        //  DATA ATURAN DISKON
+        //  DATA ATURAN DISKON (diperbarui)
         // ──────────────────────────────────────────────
         const aturan = [{
-            id: 1,
-            label: '50% 50RB',
+            id: 5,
+            label: '50% 50RB (Lama)',
             persen: 50,
             maxPotongan: 50000,
-            minBelanja: 50000,
-            display: '50% · max Rp 50.000'
+            minBelanja: 25000,
+            display: '50% · max Rp 50.000',
+            tag: 'PENGGUNA LAMA'
         }, {
-            id: 2,
-            label: '100% 100RB',
+            id: 6,
+            label: '100% 50K (Lama)',
             persen: 100,
-            maxPotongan: 100000,
-            minBelanja: 150000,
-            display: '100% · max Rp 100.000'
+            maxPotongan: 50000,
+            minBelanja: 25000,
+            display: '100% · max Rp 50.000',
+            tag: 'PENGGUNA LAMA'
         }, {
             id: 3,
-            label: '50% 100RB',
+            label: '50% 100RB (Baru)',
             persen: 50,
             maxPotongan: 100000,
             minBelanja: 100000,
-            display: '50% · max Rp 100.000'
+            display: '50% · max Rp 100.000',
+            tag: 'PENGGUNA BARU'
+        }, {
+            id: 2,
+            label: '100% 100RB (Baru)',
+            persen: 100,
+            maxPotongan: 100000,
+            minBelanja: 150000,
+            display: '100% · max Rp 100.000',
+            tag: 'PENGGUNA BARU'
         }, {
             id: 4,
-            label: '50% 200RB',
+            label: '50% 200RB (Baru)',
             persen: 50,
             maxPotongan: 200000,
             minBelanja: 200000,
-            display: '50% · max Rp 200.000'
+            display: '50% · max Rp 200.000',
+            tag: 'PENGGUNA BARU'
         }];
 
         // ──────────────────────────────────────────────
@@ -750,7 +788,7 @@
         let hasilPerhitungan = null;
 
         // ──────────────────────────────────────────────
-        //  RENDER ATURAN CARD
+        //  RENDER ATURAN CARD (dengan tag)
         // ──────────────────────────────────────────────
         function renderAturan() {
             aturanGrid.innerHTML = '';
@@ -758,10 +796,12 @@
                 const card = document.createElement('div');
                 card.className = 'aturan-card';
                 card.dataset.id = r.id;
+                const tagClass = r.tag === 'PENGGUNA LAMA' ? 'lama' : 'baru';
                 card.innerHTML = `
                     <div class="persen">${r.persen}% <span class="small">max</span></div>
                     <div class="detail"><b>${formatRupiah(r.maxPotongan)}</b></div>
                     <div class="min">🛒 min ${formatRupiah(r.minBelanja)}</div>
+                    <div class="tag-label ${tagClass}">${r.tag}</div>
                     <div class="check">✓</div>
                 `;
                 aturanGrid.appendChild(card);
@@ -810,7 +850,6 @@
             }
 
             if (terbaik.aturan === null) {
-                // tidak ada diskon
                 return {
                     diskon: 0,
                     totalBayar: total,
@@ -819,11 +858,13 @@
                     persen: 0,
                     label: 'Tidak ada diskon berlaku',
                     tag: '⛔',
+                    tagClass: ''
                 };
             }
 
             const diskon = terbaik.potongan;
             const totalBayar = total - diskon;
+            const tagClass = terbaik.aturan.tag === 'PENGGUNA LAMA' ? 'lama' : 'baru';
             return {
                 diskon: diskon,
                 totalBayar: totalBayar,
@@ -831,7 +872,8 @@
                 aturan: terbaik.aturan,
                 persen: terbaik.persen,
                 label: terbaik.aturan.label,
-                tag: `✅ ${terbaik.persen}%`,
+                tag: `${terbaik.persen}% · ${terbaik.aturan.tag}`,
+                tagClass: tagClass,
             };
         }
 
@@ -848,7 +890,6 @@
             const hasil = hitungDiskon(total);
             hasilPerhitungan = hasil;
 
-            // update angka
             totalDisplay.textContent = formatRupiah(total);
             diskonDisplay.textContent = formatRupiah(hasil.diskon);
             bayarDisplay.textContent = formatRupiah(hasil.totalBayar);
@@ -857,10 +898,12 @@
             if (hasil.aturan) {
                 aturanNama.textContent = hasil.label + ' · min ' + formatRupiah(hasil.aturan.minBelanja);
                 aturanTag.textContent = hasil.tag;
+                aturanTag.className = 'tag ' + hasil.tagClass;
                 updateAturanCards(total, hasil.aturan.id);
             } else {
                 aturanNama.textContent = hasil.label;
                 aturanTag.textContent = hasil.tag;
+                aturanTag.className = 'tag';
                 updateAturanCards(total, null);
             }
 
@@ -881,16 +924,13 @@
             const angka = parseAngka(raw);
             nilaiTotal = angka;
             const formatted = formatAngka(angka);
-            // simpan posisi kursor
             const start = this.selectionStart;
             const end = this.selectionEnd;
             this.value = formatted;
-            // jika ada perubahan panjang, sesuaikan kursor
             if (raw !== formatted) {
                 const diff = formatted.length - raw.length;
                 this.setSelectionRange(start + diff, end + diff);
             }
-            // update hasil otomatis (opsional)
             if (angka > 0) {
                 tampilkanHasil(angka);
             } else {
@@ -938,7 +978,6 @@
         // ──────────────────────────────────────────────
         //  INIT
         // ──────────────────────────────────────────────
-        // set contoh awal
         inputEl.value = '';
         hasilContainer.classList.remove('show');
         updateAturanCards(0, null);
